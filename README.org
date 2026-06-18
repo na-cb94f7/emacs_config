@@ -1,0 +1,27 @@
+This repository is meant to :
+- Make it easy to share my Emacs configuration with other folk
+- Facilitate git tracking of my Emacs configuration, across systems
+- Make myself use the =git= CLI tool
+
+To have this configuration onto your own Emacs, do the following :
+- =git clone <url>=, with $HOME/.emacs.d/ as your pwd
+- Manually change the directory to be used by =arni/load-files-in-dir=, to point to the correct =arnimacs-modules= folder in this repository
+- Don't forget to handle the .org file afterwards! You can call the /C-c C-v C-t/ shortcut, which corresponds to the =org-babel-tangle= function by default
+
+If all is well, it should have worked okay.
+You can also try this configuration, without overriding your own, by specifying the init directory at launch.
+This can be done with :
+
+#+begin_example bash
+emacs --init-directory=DIR
+#+end_example
+
+Then, DIR must be the directory that contains the =init.el= file.
+If, for example, you cloned it in =$HOME/testdir=... then the directory leading to this repository would be :
+
+#+begin_example bash
+emacs --init-directory=$HOME/testdir/arnimacs
+#+end_example
+And, due to how I set up the =init.el= file's tangling, it would be located in =testdir=, not =arnimacs=.
+That is due to the =:tangle= argument I gave, which is =../init.el=.
+This was done to account for the regular way I would use this repository, by cloning it into =$HOME/.emacs.d/=.

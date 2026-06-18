@@ -1,0 +1,2184 @@
+#+title: Arni's literate Emacs configuration
+#+author: Arni
+#+startup: content indent
+
+* An introduction
+
+I am a huge nerd. Why would I be on Emacs otherwise?
+In more seriousness, I'm quite passionate about this software.
+It's one that helps me throughout each day, thanks to things like ~org-mode~, Eshell and its many editing capabilities.
+I could go on, but to stay brief, it's just great being on Emacs.
+
+Here, I'm gonna talk about Emacs and this file, as well as my motivations behind its use.
+
+** Well, what's Emacs exactly ? And why do you use it ?
+
+Let's talk about Emacs first.
+It is often presented as a text editor, to the likes of Nano or Vim.
+But, you have to realize that Emacs is not /just/ a text editor. It is often used as one, and some people use it *only* as a text editor.
+In reality, Emacs is a language interpreter.
+And, in specific, it interprets Emacs Lisp.
+It is a Lisp-like language made specifically for this software, which does have many utilities to use this interpreter as a text editor.
+If you'd like to know more about Lisp languages, you can read about it [[https://en.wikipedia.org/wiki/Lisp_(programming_language)][on Wikipedia]] !
+If Emacs is a language interpreter, this means that we can write code for it and have Emacs interpret it to do whatever we want.
+This would essentially make it as extensible as you wish.
+Just look at the amount of Emacs packages you can download using its default package manager!
+
+This partly ties into my reasoning behind using it on a daily basis.
+I use it because of how deeply customizable it is, the culture surrounding this software, and ~org-mode~.
+If you don't know much about ~org-mode~, you can think of it as supercharged Markdown syntax that can also take care of tasks, projects, deadlines... it's great, really.
+Don't got a lot to add, it's just nice.
+
+** What is this file ?
+
+Well, what you're reading right now is my, Arni's, literate ~org-mode~ configuration.
+It can be broadly explained as literate programming, applied to configuration files which are quite a tradition in the Linux space.
+
+But then... what is literate programming ? That sounds quite odd.
+
+** What's literate programming ? And what are literate configurations, by extension ?
+
+According to [[https://en.wikipedia.org/wiki/Literate_programming][Wikipedia]]...
+
+#+begin_quote
+"Literate programming is a programming paradigm introduced in 1984 by Donald Knuth in which a computer program is given as an explanation of how it works in a natural language, such as English, interspersed with snippets of macros and traditional source code, from which compilable source code can be generated. The approach is used in scientific computing and in data science routinely for reproducible research and open access purposes. Literate programming tools are used by millions of programmers today."
+#+end_quote
+
+So essentially, it is mixing human languages (such as English) and programming languages (such as Emacs Lisp) in a single source, in order to educate the programmer and user about what the program does, and how it does what it does. That is, if we even separate user and programmer here ;].
+
+Considering all this, let us remind ourselves that a configuration file is useful in order to modify a software's behavior according to its user.
+This way, the software is as close as possible to what the user wants their experience to be like.
+
+We could think that the use of literate programming on configuration files is nice for a few reasons :
+
+- Choices are extensively commented, anotated and described in the literate configuration file.
+  This helps both the user and readers of the user's configuration in understanding which choices do what, and why the user made those choices.
+- Better code organization. Using things such as ~org-mode~, we can cleanly organize snippets of code. This helps with code navigation, and for potential users to understand how everything is structured.
+- Friendly interface, as opposed to raw source code.
+
+Some may find other reasons, but those are ones that I relate to.
+
+So to recap, literate programming is a concept that mixes human languages and programming languages.
+Literate configurations are a way to apply this concept to configuration files.
+
+** How does this specific literate configuration work ?
+
+Based on Protesilaos Stavrou's literate configuration, this file generates the Elisp code that will be read by Emacs, instead of this file being some sort of dependency for my Emacs to launch.
+I can then manually tangle the code in this file by calling ~org-babel-tangle~, bound to the =C-c C-v C-t= shortcut.
+
+Well, now that we mentionned everything in the introduction, it would be a good time to talk about the code.
+* On learning more about Emacs
+
+Throughout this file, I will try to supply readers with an easy way to inform themselves on related Emacs features and to explain specific concepts.
+
+In the [[*arni-literate-program][arni-literate-program]] heading, you can find an example of this where I provide a symbolic expression. Evaluating this symbolic expression will then send you to the Emacs manual.
+I aim to do the same throughout this file, or provide useful links such as those from the [[https://www.emacswiki.org/][Emacs Wiki]].
+
+If you're not sure of how to evaluate symbolic expressions in Emacs, here is a hopefully brief explanation.
+
+Here's an example of a symbolic expression :
+
+#+begin_example elisp
+(info "(emacs) Top")
+#+end_example
+
+Note how things are kept inside of parentheses, which is symbolic (hah) of Lisp-like languages.
+
+You can put the cursor on the last parenthesis of this symbolic expression, then call ~eval-last-sexp~.
+You can do that either by calling it from =M-x=, which stands for ~execute-extended-command~, or call =C-x C-e= which calls ~eval-last-sexp~, assuming you haven't changed the default keybindings.
+Once we evaluate it, we can see that we're sent to the top page of the Emacs manual, inside Emacs itself!
+
+In ~org-mode~, you'll also see text which has special formatting, for things like web links. On my end, this special text is underlined and blue.
+For those, which we can call buttons, we can call the =C-c C-o= shortcut for ~org-open-at-point~, which then calls an appropriate action. 
+For web links, it will open the link under point inside of your Internet browser.
+
+Throughout this file and throughout your use of Emacs, remember that you can search the Emacs manual to know more about Emacs's many features.
+You can do so by calling =C-h r= which will send you to an Info buffer, presenting the Emacs manual.
+Then, pressing =s= in this Info buffer will let you do a regular-expression search for a specific thing. Cool !
+You can also use third-party packages like ~consult~ which, in my opinion, make searching in the manual a lot easier.
+
+Finally, and this is moreso to learn the Emacs Lisp language...
+But I recently came across this article : https://www.masteringemacs.org/article/emacs-builtin-elisp-cheat-sheet
+
+If you call ~shortdoc-display-group~, you are given a choice between different groups.
+And, these groups will contain Emacs Lisp functions for common tasks. It seems very handy whenever you're writing a function and need a refresher on something.
+
+* The code
+
+Here, I decided to organize my code into small, isolated files. I'll call them modules here.
+This decision was inspired by how Protesilaos has organized his literate configuration.
+This way, it is a lot easier to share the code to people who are interested without them relying on either Emacs or ~org-mode~.
+
+** arni-literate-program
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-literate-program.el"
+:END:
+
+This module hosts utility code, that helps with frictionless use of literate programming.
+
+#+begin_src elisp
+  ;;; arni-literate-program.el
+  ;; Setting the default safe variables
+
+  (custom-set-variables
+   '(safe-local-variable-values
+     '((eval add-hook 'after-save-hook #'org-odt-export-to-odt nil 'local)
+       (eval add-hook 'after-save-hook (lambda nil (org-babel-tangle))
+  	   nil t))))
+#+end_src
+
+The above code will set Emacs' default safe local variables. Now uh, what are local variables ?
+We can learn more about it by evaluating this symbolic expression :
+
+#+begin_example elisp
+(info "(emacs) Locals")
+#+end_example
+
+or by visiting the link here : https://www.gnu.org/software/emacs/manual/html_node/emacs/Locals.html.
+
+We can infer that local variables are essentially variables specific to a given buffer.
+This enables, for example, particular behavior for certain files and buffers.
+
+** arni-package-manager
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-package-manager.el"
+:END:
+
+Emacs uses a package manager, in order to... manage... your packages.
+Here, I customize it to fit my own needs.
+As with many other package managers, it offers package searching, enabling different repositories, updates and such.
+
+Another thing I'm fond of using for managing packages is ~use-package~. What's that ?
+Not a package manager, but a macro! That is, a handy set of functions that help one configure their packages with just a few declarations.
+You can evaluate this symbolic expression to read the use-package manual in Emacs :
+
+#+begin_example elisp
+(info "(use-package) Top")
+#+end_example
+
+or you can read [[https://github.com/jwiegley/use-package][its GitHub page]] and online user manual : https://www.gnu.org/software/emacs/manual/html_mono/use-package.html.
+
+*But uhm, what are macros then?*
+
+In Emacs Lisp, like all Lisps, macros are a way for the programmer to extend the language itself.
+These macros take some Lisp code as input, and can create new Lisp code out of that.
+
+As the Common Lisp documentation puts it... you could think of macros as functions that operate on code itself, rather than data as we're commonly used to (think Python, for example).
+
+You can read up on [[https://lisp-docs.github.io/docs/tutorial/macros][the Common Lisp documentation of macros]] for further information.
+
+*** ~package.el~, ~use-package.el~
+
+#+begin_src elisp
+  ;;; arni-package-manager.el
+  ;;; Configure pacakge.el
+
+  (require 'package)
+  (setq package-install-upgrade-built-in t) ; Upgrade built-in packages along with manually-installed ones
+  (add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/"))
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+  (package-initialize)
+
+  ;;; Make use-package install packages if they aren't
+
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+
+  (require 'use-package-ensure)
+  (setq use-package-always-ensure t) ; Install packages if not installed and configured through use-package
+  (setq package-check-signature nil)
+#+end_src
+
+Here, you should note a few important things.
+First, the inclusion of :
+
+#+begin_example elisp
+(setq package-install-upgrade-built-in t)
+#+end_example
+
+When you install Emacs, you'll have many different packages pre-installed alongside it. A good example of this is ~org-mode~, which is installed without you needing to do anything to acquire it onto your system.
+
+However, Emacs's default behavior is to /not/ upgrade those built-in packages, as opposed to upgrading other packages you've installed onto your system.
+You can read [[http://yummymelon.com/devnull/updating-built-in-emacs-packages.html][this article from Charles Choi]] if you'd like to know more about this decision.
+
+I'd personally prefer to have the latest libraries and packages available on Emacs, so I overwrote this behavior to upgrade all packages.
+
+Now, about this bit of code :
+
+#+begin_example elisp
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
+#+end_example
+
+Here, I modify the behaviour of ~use-package~ to always install packages if they are not currently installed. This makes it very simple for me to port my Emacs configuration over to other systems.
+
+** arni-search
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-search.el"
+:END:
+
+Before including the code, I'd like to talk about searching for things in Emacs.. and in general.
+The vast majority, if not all that we'll search for in Emacs will either /be/ text or be /represented by/ text.
+So, it's good to keep in mind that when we search in Emacs, we look for the text associated with it.
+
+Along with that, there are many different kinds of text we'll be searching for at any given moment.
+If you write prose ; you could be looking for words, lines, paragraphs, specific words that could refer to something like a fictional character...
+But if you write source code ; you'd instead look for symbolic expressions, function definitions, variables, conditionals, so on and so forth...
+
+And finally, it's good to look into why we search for those things to begin with.
+
+With prose, we could look for something if we forgot specific information we'd like to recall.
+Maybe it's just to get one thing, out of a sea of text. Think of getting a recipe in the modern web hellscape. Stuff like that.
+For source code, you could want to learn how a specific function works, get an overall understanding of a program, fix an error in the code...
+In both cases, we look for a specific thing (likely thanks to the characters in the thing of interest) and do actions on it. Reading, editing, copying...
+
+So for a small recap, we search for specific things in order to do actions on them. And the way we search for them is through text.
+
+So uhm... what can we guess from that ?
+
+We can think that depending on what we're doing, we could use different tools (or use the same tools differently), in order to reach what we want to reach faster.
+A good example of this idea would be to modify ~isearch~'s behavior, depending on the major mode.
+If we're in a text-derived mode or ~org-mode~, ~isearch~ could keep its usual behavior.
+But, if we are in a programming-derived mode, we could make ~isearch~ look for specific texts related to programming.
+So, we could imagine the ability to limit ~isearch~ candidates to variables, or function definitions, or... you get the idea. We could reduce the amount of search candidates, and therefore be more efficient in looking for specific things.
+
+Some tools may also be more suited to specific tasks. ~occur~ would be better suited when you have a lot of search candidates, or you'd need an interactive way to look for and directly edit search candidates. Or, the famous ~avy~ package would let you quickly jump to specific and visible text.
+
+I was tempted to add the ~dired~ package to this module, but I think this belongs to either its own module or in a module about my use of Emacs separate to text editing.
+
+Now, let's include all the code, shall we ?
+
+*** ~isearch~ configuration
+
+~isearch~ is one of Emacs's core tools. It lets you do an incremental search, and quickly jump to a given candidate.
+I'll stay brief because you can quickly get complicated, but I invite you to read this manual page to learn its basics.
+
+#+begin_example elisp
+(info "(emacs) Basic Isearch")
+#+end_example
+
+or https://www.gnu.org/software/emacs/manual/html_node/emacs/Basic-Isearch.html...
+
+And this page to learn about different customization options for ~isearch~ :
+
+#+begin_example elisp
+(info "(emacs) Search Customizations")
+#+end_example
+
+or https://www.gnu.org/software/emacs/manual/html_node/emacs/Search-Customizations.html.
+
+In this block, I define functions I found, not made :^]. They'll be bound later in the next source block, which will contain the use-package declaration for ~isearch~.
+
+#+begin_src elisp
+  ;;; arni-search.el
+  ;;; isearch
+  ;; Function declarations
+
+  ;; Taken from a Reddit post
+  ;; https://www.reddit.com/r/emacs/comments/db8eu4/trying_to_collect_some_isearch_tips_and_tricks/
+
+  (defun contrib/isearch-exit-at-front ()
+      "always exit isearch, at the front of search match."
+      (interactive)
+      (isearch-exit)
+      (when isearch-forward
+        (goto-char isearch-other-end)))
+
+  (defun contrib/isearch-exit-at-end ()
+      "Always exit isearch, at the end of search match."
+      (interactive)
+      (isearch-exit)
+      (when (not isearch-forward)
+        (goto-char isearch-other-end)))
+
+  ;; Taken from isearch+.el library
+  ;; https://www.emacswiki.org/emacs/isearch%2b.el
+
+  (defun contrib/isearchp-remove-failed-part-or-last-char ()
+      "Remove failed part of search string, or last char if successful.
+      Do nothing if search string is empty to start with."
+      (interactive)
+      (if (equal isearch-string "")
+          (isearch-update)
+        (if isearch-success
+            (isearch-delete-char)
+          (while (isearch-fail-pos) (isearch-pop-state)))
+        (isearch-update)))
+#+end_src
+
+I have included the following two functions so that I would have more control over where the point is when I call ~isearch~. I can choose to be at the start of the ~isearch~ match, or to be at the end of this match.
+Moreover, the third function is here to remove ALL of the failed part of the search string.
+
+Here are some examples of these functions.
+
+Say I have the search string 'ha' and this text :
+
+#+begin_example text
+Bob has many different laughs. Ha, heehee, and hoho !
+#+end_example
+
+Corny, but you get the point. Giving 'ha' to ~isearch~ will highlight all occurences of 'ha', here being in the words 'has' and 'Ha'.
+I can go to the start of the first occurence, which will send me to the beginning of the word. I can also go to the end of the occurence, where the point will be between the 'a' and 's'.
+With the second occurence, I can then go to either the start or end of the word, as 'Ha' is the entire case-insensitive candidate.
+
+And if I give the search string 'hannah' to ~isearch~, its failed part will be 'nnah'. Instead of pressing backspace as many times as there are failed characters...
+I should be able to press backspace ONCE, and all failed characters are removed. I'd be left with 'ha', and we'd be in the same situation as for the first explanation. Nice!
+
+As for the use-package declaration...
+
+#+begin_src elisp
+  ;; use-package declaration
+  (use-package isearch
+    :ensure nil
+    :init
+    (setq isearch-repeat-on-direction-change	t ; no pause when switching between forward and backward search
+          isearch-lax-whitespace			t
+  	search-whitespace-regexp		".*"
+  	isearch-lazy-count			t
+  	isearch-allow-scroll			t ; can use C-v, M-v and others while in isearch to move in the buffer
+  	isearch-wrap-pause			'no
+  	lazy-highlight-initial-delay            0)
+    :bind
+     (:map					isearch-mode-map
+     ("<return>"		.	contrib/isearch-exit-at-front)
+     ("C-<return>"	.	contrib/isearch-exit-at-end)
+     ("<backspace>"	.	contrib/isearchp-remove-failed-part-or-last-char)
+     ("DEL"	        .	contrib/isearchp-remove-failed-part-or-last-char)))
+#+end_src
+
+*** ~occur~ configuration
+Now, let's configure ~occur~.
+If you'd like to learn more about ~occur~, you can check out this page from the manual.
+
+#+begin_example elisp
+(info "(emacs) Other Repeating Search")
+#+end_example
+
+Or, the web page at https://www.gnu.org/software/emacs/manual/html_node/emacs/Other-Repeating-Search.html.
+
+It is essentially a tool that will display a list of matching search candidates, and let you do a ton of things with it.
+Interactively visit search candidates, edit candidates from the Occur buffer, read the lines surrounding a given candidate...
+Try it out ! And watch [[https://www.youtube.com/watch?v=zxS3zXwV0PU][Protesilaos's video on Occur]] if you'd like to learn more.
+
+#+begin_src elisp
+  ;;; occur
+  ;; defining functions
+
+  (defvar arni-occur-region-context-lines 0
+    "The amount of context lines given to each match in 'arni/occur-region'.")
+
+  (defun arni/occur-region (start end)
+    "Start an Occur search on the current buffer, with current region as search query.
+  This function does not support Occur's region narrowing."
+    (interactive "r")
+    (let ((regiontext (buffer-substring start end))
+  	(contextlines arni-occur-region-context-lines))
+      (occur regiontext contextlines nil)
+      (deactivate-mark)))
+
+  ;; use-package declaration
+
+  (use-package isearch
+    :ensure nil
+    :demand t
+    :init
+    (setq list-matching-lines-default-context-lines 2) ; amount of lines shown around occur search candidates
+    :bind
+    ("<mouse-3>" . arni/occur-region)
+    ("<down-mouse-3>" . arni/occur-region))
+#+end_src
+
+Seemingly no such thing as a built-in ~occur~ package exists, so I put its configuration inside of an ~isearch~ use-package declaration.
+I also like to use the mouse for navigation, so I decided to make a DWIM command that lets me do an Occur search from selected text.
+Lets me be faster, especially as I made a specific variable to dictate context lines for this specific command.
+
+Note the inclusion of :
+
+#+begin_example elisp
+(setq list-matching-lines-default-context-lines 2)
+#+end_example
+
+which will increase the amount of lines that are shown around each candidate.
+This is particularly useful in order to get more context for each candidate, and to edit around this candidate.
+*** ~avy~ configuration (untangled)
+
+~avy~ is a package that lets you jump to any visible charater, either in the currently focused buffer window,  or in the entire Emacs frame.
+Sadly, there doesn't seem to be a manual page inside of Emacs for it. But, [[https://github.com/abo-abo/avy][its GitHub page]] should be enough to get you started.
+It is quite customizable, and it can help you do some 'actions' from a distance as well.
+
+I don't use those actions very often, but they can be very powerful if used correctly and often.
+You can read [[https://karthinks.com/software/avy-can-do-anything/][this article from Karthik Chikmagalur]] to know more about it.
+
+#+begin_src elisp :tangle no
+  ;;; avy
+  ;; use-package declaration
+
+  (use-package avy
+    :init
+    (setq avy-background		t ; background becomes grey, simpler to see candidates
+  	avy-styles-alist	'((avy-goto-char-timer . at-full))
+  	avy-keys		'(?q ?s ?d ?f ?j ?k ?l ?m)
+  	avy-timeout-seconds	0.7 ; press enter to directly jump to candidates
+  	avy-all-windows		nil) ; avy only acts on the currently focused buffer window for fewer candidates
+    :config
+    (advice-add 'avy-action-goto :after 'pulse-momentary-highlight-one-line)
+    (setf (alist-get ?\C-y        avy-dispatch-alist) 'avy-action-yank 
+  	(alist-get ?\C-c	avy-dispatch-alist) 'avy-action-copy 
+  	(alist-get ?\C-k	avy-dispatch-alist) 'avy-action-kill-move
+  	(alist-get ?\C-z	avy-dispatch-alist) 'avy-action-zap-to-char
+  	(alist-get ?\C-t	avy-dispatch-alist) 'avy-action-teleport
+  	(alist-get ?\C-h	avy-dispatch-alist) 'avy-action-helpful)
+    :bind
+    (("C-j" . avy-goto-word-1) ;; i would love to have avy goto word 2
+     :map	org-mode-map
+     ("C-j" . avy-goto-word-1)
+     :map isearch-mode-map
+     ("C-j" . avy-isearch)))
+#+end_src
+
+A small note, I prefer binding Avy actions to modifier keys, so it doesn't get in the way of avy-keys.
+
+*** ~consult~ configuration
+
+~consult~ is, in my eyes, a wonderful package that many people should know about.
+It's essentially a package that can show you the results of a given search.
+
+If you've used ~isearch~, you can see how, when you scroll through candidates in a buffer, your screen jumps to said candidate.
+Imagine that this idea of showing the candidate and surrounding context is extended to many other search commands.
+
+Searching for 'man' or Info manuals in Emacs, 'grep'-ing things in folders... plenty of things.
+Feel free to read [[https://github.com/minad/consult][its GitHub page]] to know more.
+
+#+begin_src elisp
+  (use-package consult
+    :bind
+    (("C-x b" . consult-buffer)))
+#+end_src
+
+*** ~eww~ configuration
+
+~eww~ is the Emacs Web Wowzer. Or alternatively, a web browser inside of Emacs.
+It's very extensible and does integrate with things like ~org-mode~, with functions such as ~org-eww-copy-for-org-mode~ that can transform the current Eww buffer into an Org buffer.
+
+To know some more about Eww, you can evaluate this symbolic expression :
+
+#+begin_example elisp
+(info "(eww)Top")
+#+end_example
+
+or go to this page : https://www.gnu.org/software/emacs/manual/html_node/eww/index.html.
+
+Here's my short configuration of ~eww~ !
+
+#+begin_src elisp
+  ;;; eww
+  ;; use-package declaration
+  (use-package eww
+    :init
+    (add-hook 'eww-after-render-hook 'visual-line-mode)
+    (add-hook 'eww-mode-hook
+  	    (lambda ()
+  	      (setq-local tab-line-tabs-function 'tab-line-tabs-mode-buffers)
+  	      (tab-line-mode 1)))
+    :config
+    (setq eww-auto-rename-buffer t
+  	eww-buffer-name-length 20)
+    :bind
+    (("C-c e" . eww)
+     :map eww-mode-map
+     ("o" . org-eww-copy-for-org-mode)))
+#+end_src
+
+I have also modified the ~tab-line-mode~ here, to fit my own needs.
+I always use the ~tab-bar-mode~, but see myself only wanting the ~tab-line-mode~ whenever using Eww.
+This way, I can get browser tabs similar to modern web browsers, like Firefox.
+To do this, I make a hook that sets a buffer-local variable only on Eww buffers.
+Then, the ~tab-line-mode~ is activated in only these Eww buffers.
+That way, this configuration applies only to Eww buffers and will not interfere with ~tab-line-mode~ for other things, were I to use it more often.
+
+If you are curious about what ~tab-line-mode~ is, you can look at this Info node :
+#+begin_example elisp
+(info "(emacs) Tab Line")
+#+end_example
+or refer to the web link at https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Line.html.
+
+You may have also seen this bit of code :
+#+begin_example elisp
+(setq eww-auto-rename-buffer t)
+#+end_example
+
+This simply will rename the Eww buffer to the name of the page, upon refreshing the buffer.
+This is very nice along with my previous ~tab-line-mode~ configuration.
+
+*** ~view-mode~ configuration
+
+I've been playing around with ~view-mode~ recently. I like the idea a lot, and it serves as a nice navigation mode not unlike what Vim has.
+But, I don't like its defaults keybindings at all so I thought I would remake them.
+
+If you are curious about this mode, you can refer to the Emacs manual page over at...
+
+#+begin_example elisp
+(info "(emacs) View Mode")
+#+end_example
+
+or on the internet at https://www.gnu.org/software/emacs/manual/html_node/emacs/View-Mode.html.
+
+Here's my little configuration now.
+
+#+begin_src elisp
+  ;;; view-mode
+  ;; rebinding keys
+
+  (defvar-keymap arni-view-mode-mark-map
+    :doc "Keymap for nesting mark-related commands in 'arni-view-mode-map'."
+    :repeat t
+    "s"		#'point-to-register ;; mark save
+    "j"		#'register-to-point ;; mark jump
+    "p"		#'View-back-to-mark ;; mark pop
+    "m"		#'set-mark-command)
+
+  (defvar-keymap arni-view-mode-map
+    :doc "Personal keymap for my preferred 'view-mode' keybindings."
+    :repeat nil
+    "/"		#'View-search-regexp-forward
+    "f"		#'View-search-last-regexp-forward ;; forward and backward matches
+    "b"		#'View-search-last-regexp-backward
+    "e"		#'View-exit ;; quit mode. could be bound to g, e or q
+    "n"		#'View-scroll-half-page-forward ;; next and previous pages (think the line commands)
+    "p"		#'View-scroll-half-page-backward
+    "SPC"	        #'View-scroll-page-forward ;; spc and s-spc rebound depending on majmode
+    "S-SPC"	#'View-scroll-page-backward
+    "j"		#'avy-goto-char-timer ;; jump
+    "m"		arni-view-mode-mark-map
+    "x"		#'exchange-point-and-mark
+    "%"		#'View-goto-percent ;; go to end or specific percentage of buffer
+    "("		#'beginning-of-buffer
+    ")"		#'end-of-buffer
+    "="		#'what-line
+    "g"		#'View-goto-line
+    "-"		#'negative-argument
+    "9"		#'digit-argument
+    "8"		#'digit-argument
+    "7"		#'digit-argument
+    "6"		#'digit-argument
+    "5"		#'digit-argument
+    "4"		#'digit-argument
+    "3"		#'digit-argument
+    "2"		#'digit-argument
+    "1"		#'digit-argument
+    "0"		#'digit-argument)
+
+  (setq view-mode-map arni-view-mode-map)
+#+end_src
+
+*** ~imenu~ configuration
+
+~imenu~ is a facility that lets you quickly jump to "major definitions", in a buffer.
+These definitions can be things like function definitions for programming languages.
+They can also be chapter sections for text major modes.
+
+Here are some of my personal configurations.
+
+#+begin_src elisp
+  ;;; imenu
+  ;; use-package
+
+  (use-package emacs
+    :config
+    (setq imenu-flatten t
+  	imenu-level-separator ": "
+  	imenu-space-replacement " "
+  	imenu-auto-rescan t
+  	imenu-max-item-length 160))
+#+end_src
+
+*** Supplementing the ~search-map~ keymap
+
+Emacs already provides a keymap for extensive searching. By default, this keymap is bound to =M-s=.
+I also decided to supplement it with many other commands, so that it would be easier for me to call some functions I'd be using.  
+
+#+begin_src elisp
+  ;;; Defining and supplementing search-map
+  (defvar-keymap arni-apropos-map
+    :doc "Personal keymap to nest 'apropos' commands."
+    "a" #'apropos
+    "d" #'apropos-documentation
+    "u" #'apropos-user-option
+    "c" #'apropos-command
+    "f" #'apropos-function
+    "v" #'apropos-variable
+    "l" #'apropos-local-variable
+    "C-v" #'apropos-value
+    "C-l" #'apropos-local-value
+    "M-l" #'apropos-library)
+
+  (define-key search-map (kbd "a") arni-apropos-map)
+  (define-key search-map (kbd "g") 'consult-ripgrep)
+  (define-key search-map (kbd "i") 'consult-info)
+  (define-key search-map (kbd "m") 'consult-imenu)
+  (define-key search-map (kbd "e") 'eww)
+  (define-key search-map (kbd "C-o") 'consult-outline)
+  (define-key search-map (kbd "s") 'shortdoc-display-group)
+#+end_src
+
+** arni-keys
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-keys.el"
+:END:
+
+Here, this module keeps all code related to keybinding helpers, small utility packages like ~which-key~ and ~repeat-mode~ configurations. Moreover, some global keybindings that wouldn't really belong to other modules.
+An example of this would be binding C-n, C-p and other movement commands to other functions.
+
+*** Talking about keybinding paradigms, and how I see efficiency / physical ergonomics for text editing
+
+Initially I wrote an entire yap session, but I don't think most people would want that !
+So, I just took my conclusions and left them here.
+If you're interested in the reasoning or experiences behind all this, then feel free to ask me!
+
+If your fingers get uncomfy seeking even one or a handful of keys on your keyboard... maybe it's your keyboard that should be looked into? Or your keyboard layout?
+If you're deeply concerned about RSI like I am, or just health-conscious... I don't think modal VS modeless editing is the right question.
+It is a lot better to talk about things like which keyboard you use, the keyboard layout, or even software modifications like adding home row keys with /keyd/.
+Using a [[https://github.com/davidphilipbarr/Sweep][Ferris Sweep]] with the [[https://colemak.com/][Colemak]] layout, as well as taking regular breaks and investing in an adjustable chair make a lot more sense if you're looking to fix RSI than the endless cycle of "hey I wanna change my keybinds!".
+
+Before actually inserting the code, I do want to add this Org table I had in my previous literate configuration.
+It has a bunch of links for different Emacs keybind packages like the ones I previously described.
+
+| Practice                          | Resources and documents                                                                                  |
+|-----------------------------------+----------------------------------------------------------------------------------------------------------|
+| Good keyboard                     | https://www.ecosia.org/search?q=ergonomic%20keyboards&addon=firefox&addonversion=5.2.0&method=topbar     |
+| Using sticky keys                 | https://www.emacswiki.org/emacs/StickyModifiers                                                          |
+|                                   | http://xahlee.info/kbd/sticky_key.html                                                                   |
+| Key chords, sequences...          | http://xahlee.info/kbd/banish_key_chords.html                                                            |
+|                                   | https://www.emacswiki.org/emacs/key-chord.el (not the key chording Xah talks about!)                     |
+| "Science" of command efficiency   | http://xahlee.info/emacs/emacs/science_of_command_efficiency.html                                        |
+| Keybinding paradigms and packages | https://github.com/meow-edit/meow                                                                        |
+|                                   | https://github.com/xahlee/xah-fly-keys                                                                   |
+|                                   | https://github.com/emacsorphanage/key-chord                                                              |
+|                                   | https://github.com/vlevit/key-seq.el (fork of key-chord where the order of keys matters)                 |
+|                                   | https://github.com/emacsorphanage/god-mode                                                               |
+|                                   | https://github.com/susam/devil (half-modal, big fan of it and its idea of modal BNPF)                    |
+|                                   | https://www.emacswiki.org/emacs/OneKey (convenient way to find keybinds, like an interactible which-key) |
+|                                   | https://elpa.gnu.org/packages/which-key.html                                                             |
+
+If there's some unsollicited advice I can give you, you REALLY should set up home-row mods or sticky keys for your entire system.
+Look into software like KMonad which is available for Linux, MacOS and Windows. Well you should always use Linux, but...
+keyd is another one I really like but it's only on Linux.
+
+*** ~repeat-mode~ configuration
+
+~repeat-mode~ is a great addition in Emacs, which lets you do away with repeating the prefix key of something, or just forgo the calling of a modifier key for certain uses.
+It's ideal for comfort and for efficiency, especially when it comes to more involved keybinds involving one or more prefixes.
+For example, this goes for things like =C-x o= for ~other-window~ or =C-c @ C-M-h= for ~hs-hide-all with hs-minor-mode enabled~.
+
+Here's an example of how one could apply and change repeat defintions to specific keymaps, taken from [[https://zck.org/emacs-repeat-mode-emacs-repeat-mode][this zck.org article]] :
+
+#+begin_example elisp
+  (defvar change-of-case-keymap
+    (define-keymap
+      "c" #'capitalize-dwim
+      "d" #'downcase-dwim
+      "u" #'upcase-dwim))
+
+  (put #'capitalize-dwim 'repeat-map 'change-of-case-keymap)
+  (put #'downcase-dwim 'repeat-map 'change-of-case-keymap)
+  (put #'upcase-dwim 'repeat-map 'change-of-case-keymap)
+
+  (global-set-key (kbd "M-c") 'capitalize-dwim) ;; run M-c, then look at the minibuffer informing you of the current repeat map
+#+end_example
+
+Now, here's my ~repeat-mode~ configuration :
+
+#+begin_src elisp
+  ;;; repeat-mode
+  ;; use-package declaration
+  
+  (use-package repeat
+    :ensure nil
+    :config
+    (setq repeat-on-final-keystroke t
+  	repeat-exit-timeout 5
+  	repeat-exit-key "<escape>"
+  	repeat-keep-prefix nil
+  	repeat-check-key t
+  	set-mark-command-repeat-pop t))
+#+end_src
+
+*** ~which-key~ configuration
+
+~which-key~ will display the next possible keybinds you can input when inside of a keymap, on the minibuffer. Since Emacs keybindings are so dense, this is incredibly useful, especially with major modes that have tons of keybinds such as ~org-mode~.
+
+Some other ideas to know keybindings are to look at major mode cheatsheets, or to call ~describe-keymap~ for the keymap of interest.
+The latter function isn't bound to any keybind by default, so you can bind it yourself or call it with =M-x=.
+It's also possible to call =C-h= when in the middle of a shortcut, which will make you jump to the Help buffer of the current keympap you're in.
+
+#+begin_src elisp
+  ;;; which-key
+  ;; use-package declaration
+  
+  (use-package which-key
+    :config
+    (setq which-key-idle-delay 0.4)
+    (which-key-mode 1))
+#+end_src
+
+** arni-dired
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-dired.el"
+:END:
+
+~dired~ is a directory editor, made inside of Emacs.
+I find it extremely handy, as you can do all the usual commands that Emacs provides.
+Alongside that, it's very programmable and is more flexible than any other file manager out there, if you learn what it can do.
+
+Some QoL features of ~dired~ include an easy access to standard file management, replicating things like ~cp~, ~mv~, ~chmod~ and so on.
+You can also mark multiple files to do the same operations on them at once, bulk rename them, only showing files and directories you're interested in, running macros...
+There's just a lot, right. It's an Emacs tool after all!
+
+If you wanna learn more, visit the related Info page by evaluating this symbolic expression :
+
+#+begin_example elisp
+(info "(emacs) Dired")
+#+end_example
+
+or look at the web page of the manual at https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html.
+
+Here, I use multiple packages to supplement Dired. Mostly, it's ~dired-preview~ and ~nerd-icons-dired~.
+Now... let's get into the code.
+
+*** ~dired-preview~ configuration
+~dired-preview~ is a package that lets you... preview files, obivously, when your cursor is onto a specific file.
+You can easily turn it on and off, as it's a toggleable minor mode that acts on Dired's behavior.
+
+For documentation on ~dired-preview~, you can evaluate this symbolic expression !
+
+#+begin_example elisp
+(info "(dired-preview) Top")
+#+end_example
+
+And you can find its GitHub page here : https://github.com/protesilaos/dired-preview
+
+#+begin_src elisp
+  ;;; arni-dired
+  ;;; dired-preview
+  ;; use-package declaration
+
+  (use-package dired-preview
+    :init
+    (setq dired-preview-delay 0.6
+  	  dired-preview-max-size (expt 2 20))
+    (setq dired-preview-ignored-extensions-regexp
+          (concat "\\."
+                  "\\(gz\\|"
+                  "zst\\|"
+                  "tar\\|"
+                  "xz\\|"
+                  "rar\\|"
+                  "zip\\|"
+                  "iso\\|"
+  		"AppImage\\|"
+                  "epub"
+                  "\\)"))
+    :bind
+    ("C-x M-p" . dired-preview-global-mode))
+#+end_src
+
+*** ~dired~ configuration
+
+Now that we set up those packages, let's look into configuring ~dired~ itself.
+
+Again, you can document yourself on Dired by visiting its Info manual page.
+
+#+begin_example elisp
+(info "(emacs) Dired")
+#+end_example
+
+or the web page at https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html.
+
+#+begin_src elisp
+  ;;; dired
+  ;; function definitions
+
+  (defun arni/diredpretties-hook()
+    (dired-hide-details-mode 1)	;; Hiding details like file permissions
+    (hl-line-mode 1) ;; line highlighted
+    (dired-omit-mode 1))
+
+  (defun arni/dwim-dired-find-file (arg)
+    "When called alone, calls dired.
+  But when called with ARG, like C-u, calls rgrep."
+    (interactive "P")
+    (if arg
+        (call-interactively 'rgrep)
+      (call-interactively 'dired)))
+
+  ;; use-package declarations
+
+  (use-package dired
+    :ensure nil
+    :demand t
+    :init
+    (require 'dired-x)
+    (add-hook 'dired-mode-hook 'arni/diredpretties-hook)
+    (setq dired-omit-files		"^\\.?#\\|^\\.$\\|^\\.\\.$\\|^\\..*$"      ;; Bound to C-x M-o (dired-omit-mode) in dired-mode-map, by default
+        dired-dwim-target			t
+        dired-auto-revert-buffer		t
+        delete-by-moving-to-trash		t
+        trash-directory			"~/.local.share/Trash/files/"
+        dired-listing-switches		"-alh --group-directories-first"
+        dired-create-destination-dirs	'ask
+        dired-guess-shell-alist-user	'(("\\.mkv\\'" "vlc"))
+        dired-clean-up-buffers-too        nil)
+    :bind
+    (("C-x M-h" . dired-hide-details-mode)
+     :map dired-mode-map
+     ("b" . dired-up-directory)
+     ("s" . arni/dwim-dired-find-file)
+     ("<TAB>" . dired-subtree-toggle)
+     ("<mouse-2>" . dired-mouse-find-file))) ;; opens in new window by default, dont like it
+#+end_src
+
+Some things that I think are noteworthy are ~delete-by-moving-to-trash~, ~dired-listing-switches~ and ~dired-dwim-target~.
+
+~delete-by-moving-to-trash~ is a variable which says whether files deleted by Emacs should be fully deleted or instead moved to a Trash folder. It meshes well with the ~trash-directory~ variable which specifies what this Trash folder should be.
+These two variables affect ~delete-file~, ~delete-directory~ and Dired deletion commands.
+
+Go to this manual page for more information on miscellaneous file operations like those for Trash folders :
+
+#+begin_example elisp
+(info "(emacs) Misc File Ops")
+#+end_example
+its web page being at https://www.gnu.org/software//emacs/manual/html_node/emacs/Misc-File-Ops.html.
+
+And, this page for more information on deleting files with ~dired~ :
+
+#+begin_example elisp
+(info "(emacs) Dired Deletion")
+#+end_example
+also readable here : https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired-Deletion.html.
+
+Now, the way that ~dired~ obtains its output is from ~ls~, the Linux CLI tool.
+Therefore, we can modify its output by modifying which arguments it calls when using ~ls~.
+~dired-listing-switches~ is therefore the arguments to pass to ~ls~, in order to have the desired Dired output.
+
+Finally... when you work with Dired, and if you enjoy the workflow that CLI tools like Midnight Commander provide, you may use multiple panes to manage files.
+And, for example, you may want to move or copy a bunch of marked files to another folder, the latter one being the folder shown in the other pane. Generally, when you're being prompted for a directory to do actions on.
+To automatically suggest the directory of the other pane, you can use the ~dired-dwim-target~ and set it to non-‘nil’.
+I think it's very handy!
+
+There are some more tidbits about this variable which you can read at :
+
+#+begin_example elisp
+(info "(emacs) Operating on Files")
+#+end_example
+or at https://www.gnu.org/software/emacs/manual/html_node/emacs/Operating-on-Files.html.
+
+Also, a thing I just learned while writing this !
+Reading the "(emacs) Dired Enter" page and a Reddit post, I found that you can make Dired only list files that match a particular pattern starting from a directory.
+
+#+begin_example elisp
+(info "(emacs) Dired Enter")
+#+end_example
+readable at https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired-Enter.html.
+
+It sounds very nice, as a way to conveniently limit the files to only interesting things.
+Assuming you are on Linux or otherwise have a filesystem following its convetions, here's an example :
+
+1) Only listing .png files in the ~dired~ buffer of the '~/Pictures' folder.
+2) The same, either directly inside this folder, or in any of its subfolders.
+  
+#+begin_example elisp
+(dired "~/Pictures/*.png")
+(dired "~/Pictures/*/*.png")
+#+end_example
+
+I also decided to make a nice utility : when ~dired~ sees I'm in the trash directory, the ~delete-by-moving-to-trash~ variable is set to nil on this buffer.
+
+#+begin_src elisp
+  ;;; dired trash utility
+
+  (with-eval-after-load 'dired
+    (add-hook 'dired-after-readin-hook
+    	    (lambda ()
+    	      (if (equal (dired-current-directory) "/home/arni/.local.share/Trash/files/") ;; dont use eq !
+    		  (progn
+      		    (setq-local delete-by-moving-to-trash nil)
+    		    (highlight-regexp "/home/arni/.local.share/Trash/files" 'hi-pink)
+    		    (message "Files will be fully deleted here!"))
+    		(ignore)))))
+#+end_src
+
+I didn't see much of a point in making it into a function, so it's just a lambda function.
+
+** arni-org
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-org.el"
+:END:
+
+~org-mode~ is one of the most famous Emacs major modes.
+It can be quickly described as a supercharge Markdown format which can help you in your daily life.
+Whether you're a writer, programmer, average Joe... it's really nice.
+
+But what can ~org-mode~ do? And why do I use it?
+
+Well, it can be just a formatting syntax, like Markdown.
+Hyperlinks, text formatting, headings... the usual, really.
+However, ~org-mode~ is capable of much more.
+You can easily write entire documents and easily export them to different formats : iCal, HTML, LaTeX and PDF, ODT, Markdown, simple plain text...
+And of course, you can extend it to export to more formats if needed.
+You can add tons of metadata in headings, from stuff like TODO states to scheduling, specific tags, specific properties...
+
+Using this metadata, you can then ask ~org-mode~ to resurface specific headings and their contents. ~org-agenda~ is a notable tool for this!
+~org-mode~ also makes literate programming very easy, as you can mix formatting syntax and code segments that work.
+Then, you can send the contents of multiple code blocks to specific files.
+It's what makes this document possible in the first place!
+
+Finally, it has many utilities to help you with daily calendaring, personal knowledge management, time tracking, planning, project management and... you get the idea.
+
+To me, it's essentially a powerhouse for my life and to organize everything. I remember kinda stumbling about, switching PKM tools to help myself in my daily life and to stay on top of things. ~org-mode~ stopped me from jumping everywhere.
+
+To know more about ~org-mode~, you can look at the ~org-mode~ manual and its website.
+
+The website can be found here : https://orgmode.org/
+And to access the manual, you can either look at it from their website at https://orgmode.org/manuals.html...
+
+Or, especially if you know how to navigate in Emacs, you can read it inside Emacs :
+
+#+begin_example elisp
+(info "(org) Top")
+(info "(org) Features Overview")
+#+end_example
+
+Now... let's look into the configurations !
+
+*** general ~org-mode~ configuration
+
+#+begin_src elisp
+  ;;; arni-org
+  ;;; configuring general options of org-mode
+
+  (use-package org
+    :init
+    (setq org-todo-keywords
+          '((sequence "TODO(t)" "IN-PROGRESS(i)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
+    (setq org-startup-folded		'content
+  	  org-use-speed-commands	t
+  	  org-refile-targets		'((nil :maxlevel		.	3)
+  					  (org-agenda-files :maxlevel	.	3))
+  	  org-ellipsis			" ▼"
+  	  org-fontify-todo-headline     nil
+  	  org-fontify-done-headline     nil
+  	  org-insert-heading-respect-content t)
+    (require 'ox-md) ; org → markdown export
+    :hook
+    (org-mode . org-indent-mode)
+    :bind
+    (("C-c c" . org-capture)
+     ("C-c a" . org-agenda)
+     ("C-c l" . org-store-link)
+     :map org-mode-map
+     ("C-," . nil)))    
+#+end_src
+
+Here, I define things that should be relevant to most or all Org files I'll use.
+I think most options are self-explanatory, but I'd like to talk a bit about the speed commands.
+
+When your cursor is on the stars that define a heading (*), you have the possibility of using ~org-mode~'s speed commands.
+These let you type a single letter, and have each letter do a different action.
+=n= would jump to the next visible heading and =p= to the previous visible heading.
+=j= would call ~org-goto~, which lets you search for headings very efficiently. =c= lets you cycle visibility of headings, and so on.
+It's super handy once you get the hang of it.
+
+You can go to its manual page to learn more :
+
+#+begin_example elisp
+(info "(org) Speed Keys")
+#+end_example
+or look at the page here : https://orgmode.org/manual/Speed-Keys.html.
+
+You also notice letters in parentheses, next to the defined TODO state keywords.
+From https://emacslife.com/baby-steps-org.html, I found out that it lets you directly set the wanted state with C-c C-t [letter].
+I prefer that as opposed to spamming C-c C-t.
+
+*** ~org-babel~
+
+~org-babel~ is the part of ~org-mode~ that lets you write code blocks inside of Org buffers and manipulate those blocks.
+Tangling to different files, evaluating the contents of said block and so on.
+
+You can go to this page for, to read a ton about it :
+
+#+begin_example elisp
+(info "(org) Working with Source Code")
+#+end_example
+or go to the online version of the site, available at https://orgmode.org/manual/Working-with-Source-Code.html.
+
+For this configuration, the two things I modify are the functions I use for Common Lisp programming and which languages are loaded for source blocks.
+I don't have much to add on that front.
+
+Now for the configuration :
+
+#+begin_src elisp
+  ;;; org-babel
+
+  (use-package org
+    :init
+    (setq org-babel-lisp-eval-fn 'sly-eval)
+    (setq org-babel-python-command "python3")
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((python . t)
+       (emacs-lisp . t)
+       (shell . t)
+       (lisp . t))))
+#+end_src
+
+*** ~org-agenda~ and refiling
+
+~org-agenda~ is a way to view specific headings, according to some search terms you can define yourself.
+It is commonly used to check TODO items for the current day / week, or to look at headings that are of particular interest.
+You could, for example, pull up all headings in a given Org file that contain the word "recipe" or that have the "programming" tag.
+A small caveat is that you have to specify the files or folders that are taken into account when building this agenda view, as it won't take every Org file you've made in your computing life (by default, at least).
+I love it to bits and it's what helps with project management.
+
+Another tool that integrates very well is ~org-capture~. Essentially, you can call a keybind that will let you write whatever, starting from a template of your choosing.
+An example of its usage would be this : imagine you're programming, and realize there's something you have to do later.
+A frictionless way to do this would be do call ~org-capture~, then choose the default TODO template and write whatever it is you need to write. Once you're done, you can refile the written TODO item in a given file.
+
+Like usual, here is the manual page to read up on ~org-agenda~ :
+
+#+begin_example elisp
+(info "(org) Agenda Views")
+#+end_example
+or https://orgmode.org/manual/Agenda-Views.html...
+
+and the page for ~org-capture~ :
+
+#+begin_example elisp
+(info "(org) Capture")
+#+end_example
+or at https://orgmode.org/manual/Capture.html.
+
+You can also call the ~org-agenda~ and ~org-capture~ commands to see how they behave :
+
+#+begin_example elisp
+(org-agenda)
+(org-capture)
+#+end_example
+
+Now, here's my configuration !
+
+#+begin_src elisp
+  ;;; org-agenda configuration
+
+  (use-package org
+    :init
+    (defun arni/org-agenda-wm-call ()
+      (interactive)
+      (org-agenda :keys "a")
+      (delete-other-windows))
+    (setq org-agenda-files	'("~/org/refile.org")
+  	org-default-notes-file	"~/org/refile.org")
+    (setq org-capture-templates
+            '(("t" "Task" entry (file+headline "~/org/refile.org" "Tasks")
+               "* TODO %? :task:\nEntered on %T\n %i\n %a")
+              ("n" "Notes" entry (file+headline "~/org/refile.org" "Notes")
+               "* %? :notes:\nEntered on %T\n %i %a\n** Context")
+              ("r" "Reflection" entry (file+headline "~/org/refile.org" "Reflections")
+               "* %? :reflection:\nEntered on %T\n %i %a\n** Context")
+              ("p" "Project" entry (file+headline "~/org/refile.org" "Projects")
+               "* %? :project:\nEntered on %T\n %i %a\n** Context")
+              ("R" "Recipe" entry (file+headline "~/org/refile.org" "Recipes")
+               "* %? :recipe:\nEntered on %T\n %i\n %a")
+              ("i" "Idea" entry (file+headline "~/org/refile.org" "Ideas")
+               "* %? :idea:\nEntered on %T\n %i\n %a")
+  	    ("m" "Mini-essay" entry (file+headline "~/org/refile.org" "Mini-Essays")
+               "* %? :mini-essay:\nEntered on %T\n %i\n %a")
+  	    ("c" "Creative Writing" entry (file+headline "~/org/refile.org" "Creative Writing")
+               "* %? :creative:\nEntered on %T\n %i %a\n** Thoughts and reflections")))
+    (setq org-agenda-custom-commands
+  	'(
+            ;; Existing custom commands
+            ("n" "Notes" tags "notes"
+             ((org-agenda-overriding-header "Notes")
+              (org-agenda-files '("~/org/refile.org"))
+              (org-agenda-skip-function
+               '(org-agenda-skip-entry-if 'notregexp ":notes:$"))))
+            ("t" "Tasks" tags "task"
+             ((org-agenda-overriding-header "Tasks")
+              (org-agenda-files '("~/org/refile.org"))
+              (org-agenda-skip-function
+               '(org-agenda-skip-entry-if 'notregexp ":task:$"))))
+            ("r" "Reflections" tags "reflection"
+             ((org-agenda-overriding-header "Reflections")
+              (org-agenda-files '("~/org/refile.org"))
+              (org-agenda-skip-function
+               '(org-agenda-skip-entry-if 'notregexp ":reflection:$"))))
+            ("p" "Projects" tags "project"
+             ((org-agenda-overriding-header "Projects")
+              (org-agenda-files '("~/org/refile.org"))
+              (org-agenda-skip-function
+               '(org-agenda-skip-entry-if 'notregexp ":project:$"))))
+            ("R" "Recipes" tags "recipe"
+             ((org-agenda-overriding-header "Recipes")
+              (org-agenda-files '("~/org/refile.org"))
+              (org-agenda-skip-function
+               '(org-agenda-skip-entry-if 'notregexp ":recipe:$"))))
+            ("i" "Ideas" tags "idea"
+             ((org-agenda-overriding-header "Ideas")
+              (org-agenda-files '("~/org/refile.org"))
+              (org-agenda-skip-function
+               '(org-agenda-skip-entry-if 'notregexp ":idea:$"))))
+
+            ;; New custom commands
+            ("w" "Captures from last week"
+             ((agenda ""
+                      ((org-agenda-start-day "-7d")
+                       (org-agenda-span 7)
+                       (org-agenda-start-on-weekday nil)
+                       (org-agenda-start-with-log-mode t)
+                       (org-agenda-skip-function
+                        '(org-agenda-skip-entry-if 'nottodo 'done))))))
+
+            ("d" "Deadlines in next two weeks"
+             ((agenda ""
+                      ((org-agenda-time-grid nil)
+                       (org-deadline-warning-days 14)
+                       (org-agenda-entry-types '(:deadline))
+                       (org-agenda-span 14)
+                       (org-agenda-start-on-weekday nil)))))
+
+            ("s" "Scheduled tasks for next week"
+             ((agenda ""
+                      ((org-agenda-entry-types '(:scheduled))
+                       (org-agenda-span 7)
+                       (org-agenda-start-on-weekday nil))))))))
+#+end_src
+
+Here, the ~org-capture-templates~ variable is there to give me multiple templates to call when I'm calling ~org-capture~.
+And, ~org-agenda-custom-commands~ is there to give me different Agenda views I can use to resurface specific headings.
+You may also notice a function definition, which I call from my window manager to quickly check my Org agenda.
+
+** arni-programming
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-programming.el"
+:END:
+
+I may not have a lot to say in this module, because I have really not modified Emacs's programming modes nor behavior much.
+Its defaults are all good for me currently, and the only thing I need is an Org-like structure which ~outline-mode~ offers.
+
+When I program, the languages I use are usually Emacs Lisp and Python.
+I may have to dabble in other languages if, say, I use a program which is configured in neither Python not Emacs Lisp.
+
+Let's look at the configurations, now.
+
+*** ~sly~
+
+I did do some dabbling in Common Lisp, since... I use Emacs Lisp, I'm interested in most Lisps then.
+I found that SLY was a wonderful REPL for Common Lisp, so I decided to install it.
+
+#+begin_src elisp
+  ;;; arni-programming
+  ;;; sly
+  (use-package sly)
+#+end_src
+
+You can access its manual by evaluating this :
+
+#+begin_example elisp
+(info "(sly) Top")
+#+end_example
+or go to https://elpa.nongnu.org/nongnu/doc/sly/sly.html.
+
+*** ~python-mode~
+
+I don't have a ton for Python, haha.
+This, for now, is my only configuration for Python :
+
+#+begin_src elisp
+  ;;; python-mode
+  ;;; hooks
+  (add-hook 'inferior-python-mode-hook
+  	  '(lambda () (define-key inferior-python-mode-map (kbd "C-c C-h") 'python-eldoc-at-point)))
+
+  (add-hook 'python-mode-hook
+  	  '(lambda () (define-key python-mode-map (kbd "C-c C-h") 'python-eldoc-at-point)))
+
+  (add-hook 'python-mode-hook 'whitespace-mode)
+#+end_src
+
+If you'd like to add more and more to your Python programming experience, you can check out this wiki page : https://www.emacswiki.org/emacs/PythonProgrammingInEmacs
+
+*** ~c-mode~
+
+I've been dabbling in the C language.
+For now, all I would like is to have some boilerplate ready whenever a C file is created.
+For this, I use the ~auto-insert-mode~ with a custom-defined template.
+
+#+begin_src elisp
+  (eval-after-load 'autoinsert
+  '(define-auto-insert '("\\.c\\'" . "C skeleton")
+     '(
+       "Short description: "
+       "/*\n "
+       (file-name-nondirectory (buffer-file-name))
+       " -- " str \n
+       "Written on " (format-time-string "%A, %e %B %Y.") \n
+       " */" > \n \n
+       "#include <stdio.h>" \n
+       "#include \""
+       (file-name-sans-extension
+        (file-name-nondirectory (buffer-file-name)))
+       ".h\"" \n \n
+       "int main(void)" \n
+       "{" > \n
+       > _ \n
+       "return 0;" > \n
+       "}" > \n)))
+#+end_src
+
+*** ~outline-mode~ to navigate source code buffers
+
+I deeply like ~org-mode~, because it makes it a lot easier to navigate and mentally sort through everything.
+And, since ~org-mode~ is based off of ~outline-mode~, I thought it good to use this minor mode for programming modes.
+
+If you wanna read about it, you can go to this manual page :
+
+#+begin_example elisp
+(info "(emacs) Outline Mode")
+#+end_example
+or read https://www.gnu.org/software/emacs/manual/html_node/emacs/Outline-Mode.html.
+
+If you wanna try it out, do watch out! There is the ~outline-mode~ which is a /major/ mode.
+And, ~outline-minor-mode~ is a /minor/ mode, which is the one you'd want for programming major modes.
+
+Here's the configuration !
+
+#+begin_src elisp
+  ;;; outline-mode
+  (use-package outline
+    :config
+    (setq outline-minor-mode-cycle t
+  	outline-minor-mode-cycle-filter t
+  	outline-blank-line t
+  	outline-default-state t
+  	outline-minor-mode-use-buttons nil)
+    ;; look into outline-minor-mode-highlight to underline headings ?
+    :bind (:map outline-minor-mode-map
+  	      ("M-h" . outline-mark-subtree)
+  	      ("C-c C-u" . outline-up-heading)
+  	      ("C-c C-b" . outline-backward-same-level)
+  	      ("C-c C-f" . outline-forward-same-level)
+  	      ("C-c C-p" . outline-previous-visible-heading)
+  	      ("C-c C-n" . outline-next-visible-heading)
+  	      ("C-c C-j" . consult-imenu))
+    :hook
+    (prog-mode . outline-minor-mode))
+#+end_src
+
+In order to easily manage buffer visibility, I set =outline-minor-mode-cycle= and =outline-minor-mode-cycle-filter= to 't'.
+This way, I can easily cycle outline visibility with TAB and S-TAB respectively.
+It also is smart, such so that hitting TAB while inside of a code block correctly indents text.
+Wonderful !
+
+** arni-desktop
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-desktop.el"
+:END:
+
+This module hosts all of my configuration and packages, in order to use Emacs as a nice suite of applications.
+You can essentially imagine this module as my personal desktop environment, except for the window manager!
+
+*** Why use Emacs as a suite for a desktop environment ?
+
+I'll try and keep it brief !
+
+- I have a very easy access to the configurations of the tools I use
+- Easier to use these tools as a power user, due to easy configuration
+- Everything uses the same interface, thus simplifying manipulations of the information or interactions the tools offer
+- Text manipulation (searching, highlighting, editing...) is easier for me than interacting through GUIs, especially in Emacs
+- Tighter integration with my overall workflow
+- Keeping this tight workflow just in my Emacs configuration makes it portable and easy to use as a drop-in replacement, across different Linux distributions or operating systems.
+
+Now, let's talk about the configuration a bunch :].
+
+*** ~dired~ as a file manager
+
+I have already covered it in a separate module, but since I use it as my overall file manager, I thought it was good to mention.
+If you did not already and are curious about how I configured it, please check out the [[*arni-dired][arni-dired]] module.
+
+*** ~eww~ as a web browser
+
+Just like with ~dired~, this is something I've already covered.
+I like to use it as my primary web browser as it feels better than GUI browsers like Firefox.
+But, I do use Firefox where needed :
+
+- Need to look at a specific website that requires JS or is bad to look at otherwise
+- Videos and music, if I don't have those locally downloaded
+
+You can look at my [[*~eww~ configuration][~eww~ configuration]] to know more about ~eww~ and how I configured it.
+*** ~org~, ~org-capture~, ~org-agenda~ as PKM and life management
+
+Just like the other two... already talked about it :^].
+Check the [[*arni-org][arni-org]] module for more information !
+
+However, I like to use ~org-capture~ fom anywhere in my window manager.
+I found some very interesting code on the Internet, which I will link below.
+
+#+begin_src elisp
+  ;;; org-capture from my wm
+  (defadvice org-switch-to-buffer-other-window
+      (after supress-window-splitting activate)
+    "Delete the extra window if we're in a capture frame"
+    (if (equal "capture" (frame-parameter nil 'name))
+        (delete-other-windows)))
+
+  (defadvice org-capture-finalize
+      (after delete-capture-frame activate)
+    "Advise capture-finalize to close the frame"
+    (when (and (equal "capture" (frame-parameter nil 'name))
+  	 (not (eq this-command 'org-capture-refile)))
+      (delete-frame)))
+
+  (defadvice org-capture-refile
+      (after delete-capture-frame activate)
+    "Advise org-refile to close the frame"
+    (delete-frame))
+    
+  (defun activate-capture-frame ()
+    "run org-capture in capture frame"
+    (select-frame-by-name "capture")
+    (switch-to-buffer (get-buffer-create "*scratch*"))
+    (org-capture)) 
+  ;; Call org-capture system-wide with : emacsclient -c -F '(quote (name . "capture"))' -e '(activate-capture-frame)'
+  ;; Taken from https://www.reddit.com/r/emacs/comments/74gkeq/system_wide_org_capture/
+#+end_src
+
+Admittedly, I do not know which documentation to add here...
+
+*** ~eshell~, ~eat~ as a shell and terminal emulator
+
+Oh finally ! A thing I didn't talk about yet !
+~eshell~ is a shell which is written entirely in Emacs Lisp, and thus integrates very well with Emacs as a whole.
+One of its main draws is its extensibility, and the idea of interchangably using Lisp symbolic expressions and more traditional shell algorithms.
+A nice example of how this can be used well is the ability to use, say, the ~rx~ library which heavily simplifies the construction of complex regular expressions.
+Using this ~rx~ library, we can pass those simpler regular expressions to the Emacs shell and mix Emacs Lisp with CLI tools this way.
+If you're curious about more of what ~eshell~ can do, you can watch this video : https://www.youtube.com/watch?v=9xLeqwl_7n0.
+
+However, ~eshell~ is only a shell, and not a terminal emulator.
+If you need a clarification on what is different between those two concepts, read this Reddit post : [[https://www.reddit.com/r/explainlikeimfive/]["ELI5 : What is the difference between a shell and a terminal ?"]].
+
+Some terminal emulators like the external ~vterm~ or the native ~term~ exist, but they do not integrate with ~eshell~. And this is what ~eat~ offers!
+It's a terminal emulator that can also integrate with ~eshell~ by sending anything more demanding, like visual output, to ~eat~.
+
+You can read these two manual pages to read more about ~eshell~ and ~eat~ respectively :
+
+#+begin_example elisp
+(info "(eshell) Top")
+(info "(eat) Top")
+#+end_example
+or respectively, go to :
+- https://www.gnu.org/software/emacs/manual/html_mono/eshell.html
+- https://mirrors.sjtug.sjtu.edu.cn/emacs-elpa/nongnu-devel/doc/eat.html
+
+Here is the configuration, now.
+
+**** ~eshell~ configuration
+
+#+begin_src elisp
+  ;;; arni-desktop
+  ;;; eshell
+  ;; use-package declaration
+  
+  (use-package eshell
+    :config
+    (setq eshell-prompt-function
+        (lambda ()
+          (concat
+           (propertize (system-name) 'face '(:weight bold))
+           " "
+           (propertize (abbreviate-file-name (eshell/pwd)) 'face '(:weight bold))
+           " "
+           (propertize "λ" 'face '(:weight bold))
+           (propertize " " 'face 'default))))
+    (setq eshell-highlight-prompt nil)
+    (setq eshell-prompt-regexp "^.* λ ")
+    ;; defining complex hooks
+    (add-hook 'eshell-mode-hook (lambda () (setenv "TERM" "dumb")))
+    (add-hook 'eshell-mode-hook 'outline-minor-mode)
+    (add-hook 'eshell-mode-hook (lambda () (setq-local outline-regexp (concat eshell-prompt-regexp ".*"))))
+    (add-hook 'eshell-mode-hook (lambda ()
+  				(setq-local imenu-generic-expression `(("Prompt" ,(concat eshell-prompt-regexp "\\(.*\\)") 1)))))
+    :bind
+    ("C-c t" . eshell))
+#+end_src
+
+Here, I do quite a few things, especially regarding hooks.
+I first set the desired ~eshell~ prompt with ~eshell-prompt-function~. It looks like this on my end, when my pwd is my home folder :
+
+#+begin_example text
+arni-soapbox ~ λ
+#+end_example
+
+Then another variable, ~eshell-prompt-regexp~, is meant to define what the prompt can always be matched by in the form of a regular expression. And, it is quite useful for me in the last two hooks, as you may have seen.
+
+If you've read about my appreciation for ~outline-mode~ here, you notice that I enable its minor mode in ~eshell~.
+
+#+begin_example elisp
+(add-hook 'eshell-mode-hook 'outline-minor-mode)
+(add-hook 'eshell-mode-hook (lambda () (setq-local outline-regexp (concat eshell-prompt-regexp ".*"))))
+#+end_example
+
+Folding outlines in a shell or terminal emulator... huh?
+Yes! And the regular expression I define as matching an outline is any line that contains my prompt, followed by any character of any amount.
+
+I concatenate the two regular expressions that correspond to each concept, and make that the buffer-local variable of the outline regular expression in ~eshell~.
+I can then cleanly fold everything, so that I do not stay with the clutter of other functions with large output. It also makes everything a ton more readable and manageable.
+
+Then, as I did this modification... I wondered if I could make it so I could easily jump to any prompt I've entered.
+I can use ~imenu~ for this, as well as any functions that use it such as ~consult-imenu~.
+
+#+begin_example elisp
+(add-hook 'eshell-mode-hook (lambda ()
+    (setq-local imenu-generic-expression `(("Prompt" ,(concat eshell-prompt-regexp "\\(.*\\)") 1)))))
+#+end_example
+
+I did not talk of ~imenu~ up until now. If you do not know what it is, you can imagine it as a menu where all important elements can be quickly jumped to.
+Function definitions, class definitions in programming, Org headings... it's quite nice.
+You can read these manual pages to know more about ~imenu~ :
+
+#+begin_example elisp
+(info "(emacs) Imenu") ;; for a general overview of imenu
+(info "(elisp) Imenu") ;; for how to configure and script around imenu
+#+end_example
+
+By default, there are no generic ~imenu~ expressions for ~eshell~ so I defined those myself.
+It seems that the name for an ~imenu~ entry should be defined with _\\( <thing> \\)_, so that ~imenu~ picks it up.
+
+All of the above make for a very comfortable experience with terminal use. It's readable and easy to navigate in.
+Another change I could do is create a regular expression that only matches the last line and highlight it, so that I can see where the current prompt is much easier.
+
+**** ~eshell~ aliases
+
+~eshell~ can let you add aliases to its shell, which is of course quite useful.
+The file(s) that Emacs reads is stored in the ~eshell-aliases-file~ variable.
+By default, it is "/$HOME/.emacs.d/eshell/alias". It's what I use.
+
+Now, here are my aliases !
+
+#+begin_src text :tangle "../eshell/alias"
+  alias .. cd .. && pwd && ls
+  alias ... cd ../.. && pwd && ls
+  alias .... cd ../../.. && pwd && ls
+  alias f find-file $1
+  alias fn find-file-other-window $1
+  alias d dired $1
+  alias la ls -AFGhl --color=always $1
+  alias l ls -FGhl --color=always $1
+  alias upd sudo vpm up
+  alias searchsystem 'sudo find / -type f -iname "*$1*"'
+  alias arni-nosyssleep xset s off -dpms && echo "xset s off -dpms"
+  alias mkcd mkdir $1 && cd $1 && pwd
+  alias vpnup wg-quick up cava201-semm001
+#+end_src
+
+I think the only thing to pay attention to is this : watch out for distro-specific commands.
+This goes especially for things like update commands.
+
+**** ~eat~ configuration
+
+As mentionned previously, ~eat~ lets you use a terminal emulator that integrates with ~eshell~.
+As a refresher, you can read the manual page for this package here :
+
+#+begin_example elisp
+(info "(eat) Top")
+#+end_example
+
+I don't have much to say here, so I will simply add the code now.
+
+#+begin_src elisp
+  ;;; eat
+  ;; use-package declaration
+  
+  (use-package eat
+      :defer t
+      :config
+      (add-hook 'eshell-load-hook #'eat-eshell-mode)
+      (add-hook 'eshell-load-hook #'eat-eshell-visual-command-mode))
+#+end_src
+
+*** ~elfeed~ for RSS
+
+I like to use ~elfeed~, which is an RSS reader inside of Emacs.
+You can find more, over at https://github.com/skeeto/elfeed.
+
+I don't have much to add, especially as there is no in-Emacs manual availalbe for it.
+
+#+begin_src elisp
+  (use-package elfeed
+    :config				
+    (setq elfeed-feeds
+  	'(("https://meteoalerte.com/france/meteoalerte_rss.php" weather) ; Weather 
+  	  ("http://static.fsf.org/fsforg/rss/blogs.xml" libreware) ; FSF Blogs feed
+  	  ("https://tube.kher.nl/feeds/videos.xml?videoChannelId=1441" peertube) ; Yohann Hoarau
+  	  ("https://tube.kher.nl/feeds/videos.xml?videoChannelId=1926" peertube) ; Gwên
+  	  ("https://toobnix.org/feeds/videos.xml?videoChannelId=154" peertube) ; EmacsConf
+  	  ("https://karthinks.com/index.xml" emacs) ; karthinks
+  	  ("https://sachachua.com/blog/category/emacs/feed/index.xml" emacs) ; sacha chua
+  	  ("http://yummymelon.com/devnull/feeds/all.atom.xml" emacs) ; charles choi
+  	  ("https://futurism.com/feed" futurism)
+  	  ("https://reporterre.net/spip.php?page=backend-simple" ecology)
+  	  ("https://framablog.org/feed/" libreware))))
+#+end_src
+
+#+RESULTS:
+: t
+
+** arni-qol
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-qol.el"
+:END:
+
+Here, this module will host modifications I use to make Emacs more comfortable for me to use.
+This mostly contains stuff like UIs, disabling and enabling specific minor modes and so on.
+
+*** Function definitions
+
+Here, I define two QoL functions. One asks me to confirm to quit, and the other will let me easily narrow and un-narrow a buffer.
+It seems that narrowing is quite an unknown feature of Emacs, but essentially : You can arbitrarily limit what you can see or edit at any point, in the buffer.
+This is very useful to reduce the space in which you do actual work, thus making it easier to navigate in.
+Fewer search candidates, less visual noise... cool stuff.
+
+You can go to this manual page to know more :
+
+#+begin_example elisp
+(info "(emacs) Narrowing")
+#+end_example
+or go to https://www.gnu.org/software/emacs/manual/html_node/emacs/Narrowing.html.
+
+Here are the functions !
+
+#+begin_src elisp
+    ;;; arni-qol
+    ;;; Function definitions
+
+    (defun arni/confirm-save-and-quit ()
+      (interactive)
+      (if (y-or-n-p "Save all buffers and close Emacs ?")
+          (save-buffers-kill-emacs)
+        nil))
+
+    (defun arni/narrow-region-or-widen ()
+      (interactive)
+      (cond ((buffer-narrowed-p)
+      	 (progn (widen) (recenter)))
+      	((and (region-active-p) (not (buffer-narrowed-p)))
+      	 (narrow-to-region (region-beginning) (region-end)))
+      	(t (message "Buffer un-narrowed and region not active. Ignoring..."))))
+
+    (defun arni/er-sudo-edit (&optional arg)
+      "Edit currently visited file as root.
+       With a prefix ARG prompt for a file to visit.
+       Will also prompt for a file to visit if current
+       buffer is not visiting a file."
+        (interactive "P")
+        (if (or arg (not buffer-file-name))
+            (find-file (concat "/sudo:root@localhost:"
+                               (ido-read-file-name "Find file(as root): ")))
+          (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+    (defun arni/go-up-to-char (arg char &optional interactive)
+    "Go up to, but not including ARGth occurrence of CHAR.
+  When run interactively, the argument INTERACTIVE is non-nil.
+  Case is ignored if `case-fold-search' is non-nil in the current buffer.
+  Goes backward if ARG is negative; error if CHAR not found.
+  Ignores CHAR at point.
+  If called interactively, do a case sensitive search if CHAR
+  is an upper-case character."
+    (interactive (list (prefix-numeric-value current-prefix-arg)
+  		     (read-char-from-minibuffer "Go up to char: "
+  						nil 'read-char-history)
+                       t))
+    (let ((direction (if (>= arg 0) 1 -1))
+          (case-fold-search (if (and interactive (char-uppercase-p char))
+                                nil
+                              case-fold-search)))
+      (search-forward (char-to-string char) nil nil arg)
+      (backward-char direction)))
+#+end_src
+
+*** ~embark-consult~ configuration
+
+EMBARK is a very nice tool which lets you act on bits of text, or even on minibuffer candidates.
+Very DWIM-y, and I love DWIM stuff!!
+You can read about it either on its GitHub page : https://github.com/oantolin/embark#start-of-content...
+Or, inside of Emacs :
+
+#+begin_example elisp
+(info "(embark) Top")
+#+end_example
+
+It can be used in some very smart ways, as can be seen from this article : https://karthinks.com/software/fifteen-ways-to-use-embark/.
+
+As you may have noticed, I use ~embark-consult~ which integrates with the ~consult~ package.
+I previously talked about it here, so feel free to check it out!
+[[*~consult~ configuration][Section on the ~consult~ package]]
+
+Now for the configuration !
+
+#+begin_src elisp
+  (use-package embark-consult
+    :config
+    (global-set-key (kbd "C-M-<tab>") 'embark-act))  
+#+end_src
+
+*** ~emacs~ configuration
+
+Now, let's configure ~emacs~ itself. Yes, ~emacs~ is also considered a package!
+
+#+begin_src elisp
+    ;;; emacs
+    ;; use-package declaration
+
+  (use-package emacs
+    :config
+    (require 'uniquify)
+    (setq completion-styles			'(flex initials)
+        	set-mark-command-repeat-pop		t ;; C-x C-SPC C-SPC C-SPC...
+        	echo-keystrokes				0.01
+        	desktop-path				'("~/.emacs.d/")
+        	initial-scratch-message			""
+        	ring-bell-function			'ignore ;; no bell
+        	register-use-preview			t
+        	register-preview-delay			0
+        	mark-ring-mark				16
+        	uniquify-buffer-name-style		'forward
+        	apropos-do-all				nil
+        	read-file-name-completion-ignore-case	t
+        	read-buffer-completion-ignore-case	t
+        	completion-ignore-case			t
+        	display-time-format			"%H:%M"
+      	kill-whole-line				t
+  	view-read-only				t ;; read-only buffers call view-mode
+  	gc-cons-threshold                       #x40000000 ;; higher garbage collection threshold
+  	read-process-output-max                 (* 1024 1024 4) ;; maximum process output size for big data transfers
+  	initial-buffer-choice                   t
+  	disabled-command-function               nil) 
+    (setq-default truncate-partial-width-windows          nil ;; if not set to nil, will override truncate-lines
+  		truncate-lines                          t
+  		display-line-numbers			'visual)
+    (fset 'yes-or-no-p 'y-or-n-p) ;; yes or no in minibuffer becomes y or n. faster to type
+    (tool-bar-mode 0)		;; ↓
+    (scroll-bar-mode 0)		;; above 3 disable clickable help bars i do not need
+    (fido-vertical-mode 1)	;; easier minibuffer completion
+    (winner-mode 1)		;; revert window configurations easily
+    (global-auto-revert-mode 1)	;; update buffer if file on system is changed outside of emacs
+    (recentf-mode 1)		;; keep track of recently opened files on emacs
+    (save-place-mode 1)		;; save point position on buffers, in between session
+    (repeat-mode 1)		;; repeatable actions for less keystrokes
+    (delete-selection-mode 1)	;; when region is active, typing or pressing DEL deletes entire region like in other editors
+    (msb-mode 1)	                ;; Customizable mouse buffer menu, (info "(emacs) Buffer Menus")
+    :bind
+    (("C-+"	.	text-scale-increase)
+     ("C-="	.	text-scale-decrease)
+     ("C-."	.	repeat)
+     ("C-%"	.	replace-regexp)
+     ("C-<kp-equal>"	.	text-scale-decrease)
+     ;; go/zap to char commands, i work a lot within single lines
+     ("C-z"	.	arni/go-up-to-char)
+     ("M-z"	.	zap-up-to-char)
+     ("C-M-z"	.	zap-to-char)
+     ("C-c k"	.	delete-window)
+     ("C-c d"	.	dired-jump)
+     ("C-c SPC"	.	tmm-menubar)
+     ("C-c s"	.	arni/confirm-save-and-quit)
+     ("C-c n"	.	arni/narrow-region-or-widen)
+     ("C-c r"	.	arni/er-sudo-edit)
+     ("C-x C-c"	.	nil) ;; same as above
+     ("C-x C-q"	.	view-mode)
+     ("C-x b"	.	consult-buffer)
+     ("C-x k"	.	kill-current-buffer) ;; i just use ibuffer if i need to manage a lot of buffers
+     ("C-x 4 b"	.	consult-buffer-other-window)
+     ("C-x t b"	.	consult-buffer-other-tab)
+     ("C-x 5 b"	.	consult-buffer-other-frame)
+     ("C-x C-b"	.	ibuffer)
+     ("M-("	.	beginning-of-buffer) ;; easier on azerty
+     ("M-)"	.	end-of-buffer) ;; same here
+     ("M-SPC"	.	mark-word)
+     ("<mouse-9>"	.	next-buffer)
+     ("<mouse-8>"	.	previous-buffer)
+     :map			help-map
+     ("C-k"	.	describe-keymap)))
+
+  ;; Put backup files neatly away
+  (let ((backup-dir "~/.emacs.d/backups")
+        (auto-saves-dir "~/.emacs.d/backups"))
+    (dolist (dir (list backup-dir auto-saves-dir))
+      (when (not (file-directory-p dir))
+        (make-directory dir t)))
+    (setq backup-directory-alist `(("." . ,backup-dir))
+          auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+          auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
+          tramp-backup-directory-alist `((".*" . ,backup-dir))
+          tramp-auto-save-directory auto-saves-dir))
+
+  (setq backup-by-copying t    ; Don't delink hardlinks
+        delete-old-versions t  ; Clean up the backups
+        version-control t      ; Use version numbers on backups,
+        kept-new-versions 5    ; keep some new versions
+        kept-old-versions 2)   ; and some old ones, too
+#+end_src
+
+#+RESULTS:
+: describe-keymap
+
+I think the keybindings are self-explanatory, so i won't develop on them too much.
+The only thing I want to remind people is that usually, you want to put your own keybindings in a key shortcut that follows this convention :
+
+#+begin_example text
+C-c <single letter>
+#+end_example
+
+Many major modes like ~org-mode~ and ~python-mode~ bind some functions to the C-c keymap, but those binds are _never_ C-c followed by a single letter.
+Usually, the major modes binds under a major mode follow this convention :
+
+#+begin_example text
+C-c C-<single letter>
+#+end_example
+
+Everything here is rather one-note, so refer to the short comments to know what a specific thing does.
+I will add that I wanted to have all file backups in a single directory.
+Having littered directories is very annoying.
+I thus found some bits of code that you see at the bottom of the source block, here : [[https://emacs.stackexchange.com/questions/33/put-all-backups-into-one-backup-folder]].
+
+*** The ~display-buffer-alist~ variable
+
+Some of us may have heard about how the Emacs window management system is very confusing.
+It's uh.. not too far from the truth!
+
+This window management system will control where and how specific buffers will be shown to you in Emacs.
+And, the variable used for users to define preferred behavior is the ~display-buffer-alist~ variable.
+
+How did I configure mine ? Well, it works more like a manual tiling window manager. Think StumpWM.
+As in, you usually declare the window configuration yourself and Emacs must not make any decisions with spawning or removing windows, unless specified in the aforementionned variable or through specific commands.
+
+For example, if I want to spawn a new window with a specific buffer or file, I can call :
+
+- =C-x 4 b= to spawn a specific buffer in a new window, calling ~switch-to-buffer-other-window~
+- =C-x 4 f= to spawn a specific file in a new window, calling ~find-file-other-window~
+- =C-x 4 4= to make the next command I call spawn its buffer in a new window, calling ~other-window-prefix~
+
+This is very handy, especially when I want to do something like spawn an Eshell buffer in a new window.
+It's a lot more convenient than calling 5 different commands to manually spawn a new window, then switch to it and etc...
+
+All the commands to spawn a specific buffer in a new window are nested under =C-x 4=.
+For those who are interested in working with frames, look into shortcuts nested inside of =C-x 5=.
+
+But back to the ~display-buffer-alist~ variable itself. You have a plethora of different options to control how buffers are displayed, down to controlling the size of a very specific buffer and if it spawns on, say, the bottom of the whole frame or the top side.
+
+As mentioned, I like to have Emacs not spawn or remove windows itself. The exception is for small buffers that can give valuable information on another buffer, or just in general.
+Occur and register preview buffers are a great example of that!
+
+Now, here's my own configuration.
+
+#+begin_src elisp
+  ;;; display-buffer-alist
+  (defun arni/dba-select-window (window)
+    "A function to tell display-buffer-alist to
+  choose specific windows when opened."
+    (select-window window))
+
+  (setq display-buffer-alist
+        ;; when calling org-jump
+        '(("\\*Org Help\\*"
+  	 (display-buffer-in-side-window)
+  	 (side . bottom)
+  	 (window-height . fit-window-to-buffer))
+  	;; register previews
+  	("\\*Register Preview\\*"
+  	 (display-buffer-reuse-mode-window display-buffer-in-side-window)
+  	 (side . bottom)
+  	 (window-height . fit-window-to-buffer))
+  	;; occur
+  	("\\*Occur\\*"
+  	 (display-buffer-in-side-window)
+  	 (window-height . 0.25)
+  	 (side . bottom)
+  	 (body-function . arni/dba-select-window))
+  	;; async shell command
+  	("\\*Async Shell Command\\*"
+  	 (display-buffer-in-side-window)
+  	 (window-height . 0.25)
+  	 (side . bottom))
+  	;; embark-act
+  	("\\*Embark Actions\\*"
+  	 (display-buffer-in-side-window)
+  	 (window-height . 0.25)
+  	 (side . bottom))
+  	;; completions
+  	("\\*Completions\\*"
+  	 (display-buffer-in-side-window)
+  	 (window-height . 0.25)
+  	 (side . bottom)
+  	 (body-function . arni/dba-select-window))
+  	("\\*grep\\*"
+  	 (display-buffer-in-side-window)
+  	 (window-height . 0.5)
+  	 (side . bottom)
+  	 (body-function . arni/dba-select-window))
+  	("\\*RE-Builder\\*"
+  	 (display-buffer-in-side-window)
+  	 (window-height . 0.25)
+  	 (side . bottom)
+  	 (body-function . arni/dba-select-window))
+  	;; default behavior. imagine this is like manual tiling WMs
+  	(".*"
+  	 (display-buffer-reuse-window display-buffer-same-window))))
+
+  (setq even-window-sizes nil)  ; display-buffer hint: avoid automatic resizing
+#+end_src
+
+If you are interested in making your own configurations of this variable, here are good ressources :
+
+*Displaying buffers in suitable windows*
+
+#+begin_example elisp
+(info "(elisp) Displaying Buffers")
+#+end_example
+
+Or https://www.gnu.org/software/emacs/manual/html_node/elisp/Displaying-Buffers.html for the online version.
+
+*Protesilaos Stavrou : Control where buffers are displayed*
+
+See https://www.youtube.com/watch?v=1-UIzYPn38s.
+
+*** ~try~ configuration
+
+I like to quickly try out packages in Emacs.
+Thankfully, the self-explanatory ~try~ lets you do exactly that!
+Try a package, use it, make it automatically uninstalled.. it's nice.
+
+#+begin_src elisp
+  ;;; try
+  ;; use-package declaration
+  
+  (use-package try)
+#+end_src
+
+There isn't much to it, so I can't exactly develop further.
+You can read more about it on the GitHub page : https://github.com/larstvei/Try.
+
+*** ~persistent-scratch~ configuration
+
+I use the *scratch* buffer as a big dump for information, coding tests, prose...
+So, being able to save this buffer across sessions is very useful for me.
+A nice package for this is ~persistent-scratch~, which is self-explanatory and quite simple.
+Here's the configuration !
+
+#+begin_src elisp
+  (use-package persistent-scratch
+  :config
+  (persistent-scratch-autosave-mode 1))
+#+end_src
+
+And you can read more about it here on https://github.com/Fanael/persistent-scratch.
+
+*** ~visual-line-mode~ for readability
+
+Here, I activate ~visual-line-mode~ to have a more readable buffer.
+More often than not, I like to have it activated.
+I also added a fringe indicator, to let me know when a line is effectively truncated by the mode.
+
+#+begin_src elisp
+  (use-package emacs
+    :init
+    (setq visual-line-fringe-indicators '(left-curly-arrow nil))
+    :hook
+    (prog-mode . visual-line-mode)
+    (org-mode . visual-line-mode))
+#+end_src
+
+** arni-rice
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-rice.el"
+:END:
+
+Here, I present my configurations of themes and fonts.
+*** ~modus-themes~ configuration
+
+I really like Prot's themes, so I use one that I slightly modified to my own tastes. More of an e-ink coloring!
+
+#+begin_src elisp
+  ;;; arni-rice
+  ;;; modus-themes
+  ;; use-package declaration
+  (use-package modus-themes
+    :config
+    (setq modus-operandi-palette-overrides ;; https://protesilaos.com/emacs/modus-themes#h:34c7a691-19bb-4037-8d2f-67a07edab150
+  	'((comment red-faint))))
+
+  ;; Conditional to apply the theme
+  (if (daemonp) 
+      (add-hook 'after-make-frame-functions 
+     	      (lambda (frame) 
+     		(with-selected-frame frame (load-theme 'modus-operandi t))))
+    (load-theme 'modus-operandi t))
+#+end_src
+
+The Modus themes can be configured to have different colors than the defaults.
+Also, due to some quirks I don't understand, just loading the theme is not something that Emacs likes when run as a daemon.
+So, a conditional is made to regularly apply the theme when a new frame spawns.
+
+*** ~default-frame-alist~ variable configuration
+
+While going crazy over the difficulty of setting up a default font for the Emacs daemon, I found out about the ~default-frame-alist~ variable.
+And it's very nice!! Quite similar to the ~display-buffer-alist~ variable, so I thought I'd use that.
+
+And this comparison is really because it serves roughly the same purpose. You can define the default parameters a frame has, which lets you customize Emacs's behavior for those.
+If you would like to know more, I suggest these info pages :
+
+#+begin_example elisp
+(info "(emacs) Frame Parameters")
+#+end_example
+or https://www.gnu.org/software/emacs/manual/html_node/emacs/Frame-Parameters.html for an overview of frame parameters...
+
+And,
+#+begin_example elisp
+(info "(elisp) Window Frame Parameters")
+#+end_example
+or https://www.gnu.org/software/emacs/manual/html_node/elisp/Window-Frame-Parameters.html in order to get much more precise documentation of what you can do.
+
+Here's my (very small) configuration !
+
+#+begin_src elisp
+  ;;; default-frame-alist
+  (setq default-frame-alist
+        '((font . "Atkinson Hyperlegible Mono")
+  	(vertical-scroll-bars . nil)))
+#+end_src
+*** ~spacious-padding-mode~ configuration (untangled)
+
+I like having readable things.
+~spacious-padding-mode~ makes things readable. So I use it!
+
+What it does is add padding around Emacs windows to make it easier to read everything. It also changes the modeline into something I like much, much more.
+
+If you wanna read a bit more about it, look at :
+
+#+begin_example elisp
+(info "(spacious-padding) Top")
+#+end_example
+
+or at https://protesilaos.com/emacs/spacious-padding.
+
+#+begin_src elisp :tangle no
+  (use-package spacious-padding
+    :init
+    (setq spacious-padding-subtle-mode-line t)
+    :config
+    (spacious-padding-mode 1))
+#+end_src
+*** My modeline (untangled)
+
+I decided to make my own modeline, with very minimal information. Just what I need!
+Although it is VERY minimal, so likely I will look into adding eye-candy at some point.
+
+I also like to switch between this DIY modeline and ~doom-modeline~.
+So, I may switch between one another.
+I do prefer ~doom-modeline~ for more modern interfaces, like if I were on KDE.
+
+#+begin_src elisp :tangle no
+  ;;; My modeline configuration
+  (setq display-time-format "%H:%M"
+        display-time-default-load-average nil)
+
+  (setq-default mode-line-format
+        (list
+         ;; start of modeline left part
+         (propertize "'(" 'face '(:foreground "grey50"))
+         ;; name of major mode
+         "%m: "
+         ;; buffer name
+         "%b%&"
+         (propertize ")" 'face '(:foreground "grey50"))
+         ;; end of modeline left part
+         'mode-line-format-right-align
+         ;; start of modeline right part
+         (propertize "'(" 'face '(:foreground "grey50"))
+         ;; line number
+         "%l . %c"
+         ;; end of modeline
+         (propertize ")" 'face '(:foreground "grey50"))))
+#+end_src
+
+It roughly looks something like :
+#+begin_example text
+'(Org: arnimacs.org*)                           '(1641 . 54)
+#+end_example
+
+To know a bit more about customizing the Emacs mode-line, you can look at the following resources...
+
+*EmacsWiki on customizing the mode-line*
+
+See https://www.emacswiki.org/emacs/ModeLineConfiguration
+
+*Emacs manual pages on the mode-line*
+
+#+begin_example elisp
+(info "(elisp) Mode Line Basics")
+#+end_example
+or https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Basics.html
+*** ~doom-modeline~ configuration
+
+So, this is my /other/ modeline configuration !
+As said in the previous heading, I prefer to use this modeline when other parts of my system "look" more modern.
+What prompted me to look into this was the fact that I moved to KDE : my personal modeline feels quite ugly, inside of a KDE environment.
+Something something graphical cohesion...
+
+Well, anyways.
+Here is my configuration of said modeline :
+
+#+begin_src elisp
+  (use-package doom-modeline
+    :init
+    (setq doom-modeline-buffer-encoding nil
+  	doom-modeline-support-imenu t)
+    (column-number-mode 1)
+    :config
+    (doom-modeline-mode 1))
+#+end_src
+*** ~tab-bar-mode~ faces configuration
+
+I like to pretty things up, so I wanted to have a nice tab that resembles that of more modern editors.
+I found this Reddit post that recreates that look very well, here it is : [[https://www.reddit.com/r/emacs/comments/1dfn295/changing_the_face_in_the_unused_portion_of_the/]].
+
+The configuration is here :
+
+#+begin_src elisp :results no
+  (add-hook 'server-after-make-frame-hook
+  	  (lambda ()
+  		(set-face-attribute 'tab-bar nil :inherit 'fixed-pitch :background "Gray96" :underline '(:color "black" :style line :position t) :font "Atkinson Hyperlegible Next")
+  		(set-face-attribute 'tab-bar-tab nil :inherit 'tab-bar :box '(:line-width (6 . 4) :color "white") :overline "black" :background "white" :underline 'nil)
+  		(set-face-attribute 'tab-bar-tab-inactive nil :inherit '(shadow tab-bar-tab) :background "Gray96" :overline t :underline '(:color "black" :style line :position t))))
+
+  (setq tab-bar-separator 'nil)
+  (setq tab-bar-new-button-show nil)
+  (setq tab-bar-new-tab-choice "*scratch*")
+  (setq tab-bar-show t)
+  (setq tab-bar-format '(tab-bar-format-tabs tab-bar-separator tab-bar-format-align-right))
+  (defun tab-bar-tab-name-format-default (tab i)
+    (let ((current-p (eq (car tab) 'current-tab)))
+      (concat (propertize " " 'face `(:background "Black" )
+  			'display '(space :width (1)))
+  	    (propertize
+  	     (concat (if tab-bar-tab-hints (format "%d " i) "")
+  		     (alist-get 'name tab)
+  		     (or (and tab-bar-close-button-show
+  			      (not (eq tab-bar-close-button-show
+  				       (if current-p 'non-selected 'selected)))
+  			      tab-bar-close-button)
+  			 ""))
+  	     'face (funcall tab-bar-tab-face-function tab))
+  	    (propertize " " 'face `(:background "Black" )
+  			'display '(space :width (1))))))
+  (tab-bar-history-mode t)
+  (tab-bar-mode t)
+#+end_src
+
+#+RESULTS:
+: t
+
+** arni-tests
+:PROPERTIES:
+:header-args: :tangle "./arnimacs-modules/arni-tests.el" :results none
+:END:
+
+These are tests I like to add to my configuration, in order to try out new things and potentially better workflows.
+I prefer putting them here specifically as they are more experimental.
+
+*** Lightweight and efficient Avy replacement
+
+I use Avy only to quickly jump to specific things.
+I notice, however, that it is too mentally taxing to regularly use due to processing which candidate is the correct one, and thus which key stroke is the best.
+
+Isearch offers less mental tax, but might be more cumbersome.
+I decided to therefore try an Isearch configuration that will regexp-search for the beginning of any word in the buffer.
+
+With some small tests, I notice it was VERY efficient and was less bothering to regularly use compared to Avy.
+An upside to this is that I can easily leverage other isearch-related features, such as a quick jump to an Occur buffer with the current search regexp.
+
+#+begin_src elisp
+  ;; lightweight avy replacement
+  (global-set-key (kbd "C-j")
+  	(lambda ()
+  	  (interactive)
+  	  (push-mark)
+  	  (isearch-resume "\\<" t nil t "\\<" t)))
+
+  (define-key isearch-mode-map (kbd "C-j") 'avy-isearch)
+  (use-package org
+    :config
+    (define-key org-mode-map (kbd "C-j")
+  	      (lambda ()
+  		(interactive)
+  		(push-mark)
+  		(isearch-resume "\\<" t nil t "\\<" t)))
+    ;; reverse
+    (define-key org-mode-map (kbd "C-S-j")
+  	      (lambda ()
+    		(interactive)
+  		(push-mark)
+    		(isearch-resume "\\<" t nil nil "\\<" t))))
+
+  ;; reverse
+  (global-set-key (kbd "C-S-j")
+  	(lambda ()
+  	  (interactive)
+  	  (push-mark)
+  	  (isearch-resume "\\<" t nil nil "\\<" t)))
+
+#+end_src
+
+*** Update notifier, WIP
+
+A small test to be notified of how many packages I need to update.
+Lets me have updated packages often, instead of forgetting all the time !
+Now, I need to find a way to be notified of such a thing.
+Maybe in the mode-line ?
+
+#+begin_src elisp :tangle no
+(let ((upgradeable-amount (length (package--upgradeable-packages))))
+	      (message
+	       (cond
+		((equal upgradeable-amount 0) "No packages to upgrade")
+		((equal upgradeable-amount 1) "1 package to upgrade")
+		(t (format "%s packages to upgrade" upgradeable-amount)))))
+#+end_src
+
+** Loading all modules in the =init.el= file
+:PROPERTIES:
+:header-args: :tangle "../init.el"
+:END:
+
+In order to load all modules easily, I made a small utility function
+that will load every =.el= file in a given directory.
+
+#+begin_src elisp
+  (defun arni/load-files-in-dir (dir)
+    (let ((el-files (directory-files dir nil "\\.el$" t))
+  	(file-path nil))
+      (dolist (file el-files nil)
+        (setq file-path (concat dir "/" file))
+        (load-file file-path))))
+
+  (arni/load-files-in-dir "/home/arni/.emacs.d/arnimacs/arnimacs-modules") ;; specify an absolute path!
+#+end_src
+
+* My contact information
+
+If you have any questions, you can do the following :
+
+- Send me a DM on Discord or Matrix, if you have my username.
+  (I don't feel like sharing it everywhere, sorry!)
+- Send me a message on my Reddit account, u/arni_ca.
+  https://www.reddit.com/user/arni_ca/
+- Send me mail at arni@disroot.org.
